@@ -112,6 +112,12 @@ public partial class Rectangle
         return 2 * ((float)Width + Height);
     }
 
+
+    public override string ToString()
+    {
+        return $"Rectangle: {Category}: Width = {Width}, Height = {Height}, Area = {CalculateArea()}";
+    }
+
     public void DisplayInfo()
     {
         Console.WriteLine($"Rectangle: {Category}: Width = {Width}, Height = {Height}, Area = {CalculateArea()}");
