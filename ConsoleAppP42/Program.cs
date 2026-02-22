@@ -1,178 +1,90 @@
 ﻿
-using ConsoleAppP42.Garbadge;
-using System.IO;
-using System.Text;
+using ConsoleAppP42.LogsExample;
+using ConsoleAppP42.Serialization;
+using log4net.Config;
+using NLog;
+using Serilog;
+
+
+Logger logger = LogManager.GetCurrentClassLogger();
 
 /*
- * Життєвий цикл будь-якого об'єкта можна представити так:
-
-Виділення пам'яті для типу;
-
-Ініціалізація виділеної пам'яті (встановлення об'єкта в початкове значення — виклик конструктора);
-
-Використання об'єкта в програмі;
-
-Руйнування стану об'єкта;
-
-Звільнення зайнятої пам'яті.
- * 
+ * Додайте в свій проєкт 
+ *  Serilog
+    Serilog.Sinks.Console
+    Serilog.Sinks.File
+Сконфігуруйте Serilog для логування в консоль та файл 
+Додате інформацію про результати операцій в коді
+які дані були, результа перетворень
  * 
  */
 
-//void Test()
-//{
-//    List<Foo> foos = new List<Foo>();
 
-//    for (int i = 0; i < 1000; i++)
-//    {
-//        foos.Add(new Foo(i));
-//    }
+// Serilog
+//Log.Logger = new LoggerConfiguration()
+//    .MinimumLevel.Debug()
+//    .WriteTo.Console(
+//    restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug,
+//    outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+//    )
+//    .WriteTo.File(
+//        path: "log_.log", // Шаблон імені файлу з підстановкою дати
+//        rollingInterval: RollingInterval.Day, // Щоденне створення нового файлу
+//        retainedFileCountLimit: 7, // Зберігати лише останні 7 файлів
+//        fileSizeLimitBytes: 10 * 1024 * 1024, // Максимальний розмір файлу 10 МБ
+//        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+//        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug
+//    )
+//    .CreateLogger();
 
-//    foos.Clear();
-
-//}
-
-
-///*
-// * Покоління сміття
-// * 0 покоління — це об'єкти, які щойно були створені. Вони займають найменше місце в купі і збираються найчастіше.
-// * 1 покоління — це об'єкти, які пережили принаймні одну збірку сміття.
-// * 2 покоління — це об'єкти, які пережили кілька збірок сміття і зазвичай живуть довше.
-// */
-
-
-
-////Test();
-//void Test2()
-//{
-//    int a = 10;
-//    int b = 20;
-
-//    using var foo = new Foo(a + b);
-//    using var foo2 = new Foo(a + b);
-
-//    foo.Add(100);
-
-//    foo2.Add(1000);
-//    Console.WriteLine($"Foo2 value inside using: {foo2.Value}");
+// log4net
+//XmlConfigurator.Configure(new FileInfo("log4net.config"));
+//var log4netLogger = log4net.LogManager.GetLogger(typeof(Program));
 
 
-//    foo.Add(200);
-//    Console.WriteLine($"Foo value inside using: {foo.Value}");
+var random = new Random();
+
+var arraySize = 20;
+
+var randomNumbers = Enumerable.Range(0, arraySize)
+    .Select(_ => random.Next(0, 100))
+    .ToList();
+
+// Логувати згенеровані випадкові числа
+logger.Info($"Згенеровані випадкові числа: {string.Join(", ", randomNumbers)}");
+//AppLogger.Info($"Згенеровані випадкові числа: {string.Join(", ", randomNumbers)}");
+
+//Console.WriteLine("Згенеровані випадкові числа:");
+//Console.WriteLine(string.Join(", ", randomNumbers));
+
+// 1. Парні числа
+
+var evenNumbers = randomNumbers.Where(n => n % 2 == 0).ToList();
+//Console.WriteLine("\nПарні числа:");
+//Console.WriteLine(string.Join(", ", evenNumbers));
+
+// Логувати кількість парних чисел
+logger.Info($"Кількість парних чисел: {evenNumbers.Count}");
+// Логувати самі парні числа
+logger.Info($"Парні числа: {string.Join(", ", evenNumbers)}");
+
+var bar = new Bar();
+bar.Foo();
+bar.DoSomething();
 
 
-//    //using (var foo = new Foo(a + b))
-//    //{
+logger.Error("Це повідомлення про помилку {code}: {error}");
 
-//    //    using (var foo2 = new Foo(a + b))
-//    //    {
-//    //        foo.Add(100);
-//    //        foo.Add(200);
-//    //        Console.WriteLine($"Foo value inside using: {foo.Value}");
-//    //        foo2.Add(300);
-//    //        Console.WriteLine($"Foo2 value inside using: {foo2.Value}");
-//    //    }
-//    //}
-//}
+var student = new Student { Id = 1, Name = "John Doe", Age = 20, AverageGrade = 3.5, Group = new StudentGroup { Id = 1, Name = "PV42" } };
 
+logger.Info("Створено студента: {@Student}");
 
-//Test2();
-
-//GC.Collect();
-
-//Console.ReadLine();
-
-
-//Console.WriteLine("Before GC");
-
-//Console.WriteLine("Generation 0 count:" + GC.CollectionCount(0));
-//Console.WriteLine("Generation 1 count:" + GC.CollectionCount(1));
-//Console.WriteLine("Generation 2 count:" + GC.CollectionCount(2));
-
-
-
-//Console.ReadLine();
-//GC.Collect();
-//Console.WriteLine("After GC");
-
-//Console.WriteLine("Generation 0 count:" + GC.CollectionCount(0));
-//Console.WriteLine("Generation 1 count:" + GC.CollectionCount(1));
-//Console.WriteLine("Generation 2 count:" + GC.CollectionCount(2));
-
-//var mi = GC.GetGCMemoryInfo();
-//Console.WriteLine($"Memory Load: {mi.MemoryLoadBytes / 1024 / 1024} MB");
-
-
-
-//Console.ReadLine();
-
-//// Примусове викликання збирача сміття
-
-////GC.WaitForPendingFinalizers();
-//Console.WriteLine("End of Main");
-
-
-// Потоки
-
-using MemoryStream ms = new MemoryStream();
-using FileStream fs = new FileStream("test.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite);
-using BufferedStream bs = new BufferedStream(fs);
-
-string text = "Hello, World!";
-ms.Write(Encoding.UTF8.GetBytes(text));
-ms.Seek(0, SeekOrigin.Begin);
-ms.CopyTo(bs);
-
-// Reading from streams
-// Для читання з потоків використовуються класи TextReader, StreamReader, BinaryReader та інші.
-
-using StringReader strReader = new StringReader(text);
-using TextReader reader = new StreamReader(ms);
-using BinaryReader binReader = new BinaryReader(ms);
-
-reader.ReadLine();
-reader.ReadToEnd();
-
-// Writing to streams
-// Для запису в потоки використовуються класи TextWriter, StreamWriter, BinaryWriter та інші.
-
-using StringWriter strWriter = new StringWriter();
-using TextWriter writer = new StreamWriter(ms);
-using BinaryWriter binWriter = new BinaryWriter(ms);
-
-binWriter.Write(12345);
-binWriter.Write(67.89);
-
-
-
-// Прочититати з файлу
-//using StreamReader fileReader = new StreamReader("test.txt");
-//string fileContent = fileReader.ReadToEnd();
-
-//Console.WriteLine(fileContent);
-
-//var content = File.ReadAllText("test.txt");
-File.WriteAllText("test.txt", "This is a test file.");
-
-
-//using FileStream fileStream = new FileStream("test.txt", FileMode.Open, FileAccess.Read);
-//using TextReader fileReader = new StreamReader(fileStream);
-//string fileContent = fileReader.ReadToEnd();
-
-using FileStream fileStream = new FileStream("test.txt", FileMode.Open, FileAccess.Read);
-using FileStream fileStream2 = new FileStream("test_copy.txt", FileMode.Create, FileAccess.Write);
-fileStream.CopyTo(fileStream2);
-
-
-
-//var buffer = new byte[fileStream.Length];
-//fileStream.Read(buffer, 0, buffer.Length);
-//string fileContent = Encoding.UTF8.GetString(buffer);
-
-
-
-
-
+// Рівні повідомлень логування
+// - DEBUG - для детальної інформації, яка може бути корисною для розробників під час налагодження.
+// - INFO - для загальної інформації про роботу програми, яка може бути корисною для моніторингу та аналізу.
+// - WARNING - для повідомлень про потенційні проблеми або незвичайні ситуації, які не є критичними, але можуть вимагати уваги.
+// - ERROR - для повідомлень про помилки, які виникли під час виконання програми і можуть впливати на її роботу.
+// - CRITICAL - для повідомлень про серйозні помилки, які можуть призвести до збоїв або втрати даних.
 
 
 
